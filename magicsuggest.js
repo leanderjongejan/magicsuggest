@@ -21,6 +21,13 @@
         var defaults = {
             /**********  CONFIGURATION PROPERTIES ************/
             /**
+             * Use this accent map for filtering items. The input value "Corne" shows the value "Corné"
+             * and the input value "Corne" also shows "Corné" as result
+             */
+            accentMap : {
+                'áäâàæãåā':'a','éëêèęėē':'e','íïìîįī':'i','óöôòõœøō':'o','úüûùū':'u'
+            },
+            /**
              * Restricts or allows the user to validate typed entries.
              * Defaults to true.
              */
@@ -658,6 +665,25 @@
 
         var self = {
 
+            _accentFold: function (s) {
+
+                if (!s) { return ''; }
+                var ret = '', char = '';
+                for (var i = 0; i < s.length; i++) {
+
+                    char = s.charAt(i);
+                    for(var key in cfg.accentMap) {
+
+                        if(key.indexOf(char) > -1) {
+                            char = cfg.accentMap[key];
+                        }
+                    }
+                    ret += char;
+
+                }
+                return ret;
+            },
+
             /**
              * Empties the result container and refills it with the array of json results in input
              * @private
@@ -1112,14 +1138,14 @@
              * @private
              */
             _sortAndTrim: function(data) {
-                var q = ms.getRawValue(),
+                var q = self._accentFold(ms.getRawValue()),
                     filtered = [],
                     newSuggestions = [],
                     selectedValues = ms.getValue();
                 // filter the data according to given input
                 if(q.length > 0) {
                     $.each(data, function(index, obj) {
-                        var name = obj[cfg.displayField];
+                        var name = self._accentFold(obj[cfg.displayField]);
                         if((cfg.matchCase === true && name.indexOf(q) > -1) ||
                             (cfg.matchCase === false && name.toLowerCase().indexOf(q.toLowerCase()) > -1)) {
                             if(cfg.strictSuggest === false || name.toLowerCase().indexOf(q.toLowerCase()) === 0) {
